@@ -1,5 +1,4 @@
 add_rules("mode.debug", "mode.release")
-
 add_repositories("levimc-repo https://github.com/LiteLDev/xmake-repo.git")
 
 option("target_type")
@@ -8,24 +7,23 @@ option("target_type")
     set_values("server", "client")
 option_end()
 
--- add_requires("levilamina x.x.x") for a specific version
--- add_requires("levilamina develop") to use develop version
--- please note that you should add bdslibrary yourself if using dev version
-add_requires("levilamina", {configs = {target_type = get_config("target_type")}})
-
+add_requires("levilamina 1.9.9", {configs = {target_type = get_config("target_type")}})
 add_requires("levibuildscript")
 
 if not has_config("vs_runtime") then
     set_runtimes("MD")
 end
 
-target("my-mod") -- Change this to your mod name.
+set_languages("c++23")
+
+target("SViaVersion")
     add_rules("@levibuildscript/linkrule")
     add_rules("@levibuildscript/modpacker")
+    
     if is_plat("windows") then
         add_defines("NOMINMAX", "UNICODE")
-        set_exceptions("none") -- To avoid conflicts with /EHa.
-        add_cxflags( "/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
+        set_exceptions("none")
+        add_cxflags("/EHa", "/utf-8", "/W4", "/w44265", "/w44289", "/w44296", "/w45263", "/w44738", "/w45204")
         add_cxflags(
             "/EHs",
             "-Wno-microsoft-cast",
@@ -41,17 +39,16 @@ target("my-mod") -- Change this to your mod name.
         )
         set_toolchains("clang-cl")
     end
+    
     add_packages("levilamina")
     set_kind("shared")
-    set_languages("c++20")
     set_symbols("debug")
+    
     add_headerfiles("src/**.h")
     add_files("src/**.cpp")
     add_includedirs("src")
-    if is_config("target_type", "server") then
-    --  add_includedirs("src-server")
-    --  add_files("src-server/**.cpp")
-    else
-    --  add_includedirs("src-client")
-    --  add_files("src-client/**.cpp")
-    end
+    
+    -- BedrockProtocol
+    add_includedirs("third_party/BedrockProtocol/include")
+    add_linkdirs("third_party/BedrockProtocol/build")
+    add_links("Protocol")
